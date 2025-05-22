@@ -1,0 +1,628 @@
+html {
+	height: 100%;
+	min-height: 100%;
+}
+
+body {
+	background-color: #FFFFFF;
+	background: #FFFFFF;
+	color: #000000;
+	text-align: center;
+	margin : 0px;
+	height: 100%;
+	min-height: 100%;
+	font-family: Verdana, sans-serif;    
+	font-size: 0.9em;
+}
+
+a {
+	text-decoration: none;
+	color: #3333FF;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a.button:link, a.button:visited {
+	background-color: #0f3b80;
+	color: white;
+	border: 3px;
+	border-style: solid;
+	border-color: #0f3b80;
+	padding: 5px 10px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+}
+
+a.button:hover, a.button:active {
+	background-color: white;
+	color: #0f3b80;
+}
+
+p {
+	font: 12px Verdana, Arial, Helvetica, sans-serif;
+	margin-top: 0;
+}
+
+h1 {
+	font: 22px Verdana, Arial, Helvetica, sans-serif;
+	font-weight: bold;
+}
+
+h2 {
+	font: 18px Verdana, Arial, Helvetica, sans-serif;
+	font-weight: bold;	
+}
+
+h3 {
+	font: 18px Verdana, Arial, Helvetica, sans-serif;
+	font-weight: bold;	
+	margin-bottom: 0;
+	color: #000000;
+}
+
+h4 {
+	font: 16px Verdana, Arial, Helvetica, sans-serif;
+/*	font-weight: bold;	*/
+	margin-bottom: 4px;
+	margin-top: 4px;
+}
+
+h5 {
+	font: 13px Verdana, Arial, Helvetica, sans-serif;
+	margin-bottom: 8px;
+	margin-top: 8px;
+}
+
+#mainbody {
+    overflow: hidden;
+}
+
+#outerBody {
+    overflow: hidden;
+}
+
+#main {
+    height: 100%; /* 100% Full-height */
+    transition: margin-left .5s;
+}
+
+#frame {
+	padding:15px;
+	text-align: center;
+	display: flex;
+	flex-wrap: nowrap;
+}
+
+#msgFrame {
+	display: none;
+	margin:auto;
+	padding:20px;
+	text-align:center;
+	background-color: #FDFFFA;
+	font-size: 14px;
+}
+
+.barFrame {
+	height:10px;
+	/*margin-right:auto;
+	margin-left:auto;
+	padding-left:5px;
+	margin-right:20px;
+	padding-bottom:5px;*/
+	text-align:center;
+	color:#000000;
+	background-color: #FDFFFA;	
+	visibility: hidden;
+}
+
+#dialogContents {
+	padding: 10px;
+	border: 1px solid #222222;
+}
+
+#dialogFrame {
+	width:100%;  
+	position: absolute;
+	z-index: 9;
+	background-color: #ffffff;
+	text-align: center;
+}
+
+#dialogFrameHeader {
+	padding-top: 3px;
+	padding-bottom: 3px;
+	/*margin-right: 20px;*/
+	height:30px;
+	cursor: move;
+	z-index: 10;
+	background-color: #0f3b80;
+	color: #fff;
+}
+
+#installApp {
+	display: none;
+}
+
+#messageApp {
+/*	visibility: hidden;*/
+}
+
+.messageHeader {
+	padding-top: 3px;
+	height:35px;
+	z-index: 10;
+	background-color: #0f3b80;
+	color: #fff;
+	border-radius: 5px 5px 5px 5px;
+	visibility: hidden;
+/*	display: none;		*/
+}
+
+#reconnectApp {
+/*	visibility: hidden;*/
+}
+
+#reconnectHeader {
+	padding-top: 3px;
+	height:35px;
+	z-index: 10;
+	background-color: #0f3b80;
+	color: #fff;
+	border-radius: 5px 5px 5px 5px;
+	visibility: hidden;
+/*	display: none;		*/
+}
+
+#downloadApp {
+/*	visibility: hidden;*/
+}
+
+#downloadHeader {
+	padding-top: 3px;
+	height:35px;
+	z-index: 9;
+	background-color: #0f3b80;
+	color: #fff;
+	border-radius: 5px 5px 5px 5px;
+	visibility: hidden;
+/*	display: none;		*/
+}
+
+.title {
+	padding-top: 7px;
+	padding-right:32px;
+	font-size: 14px;
+    font-weight: bold;
+	text-align: center;
+}
+
+.tab {
+	padding-top: 7px;
+	/*padding-right:32px;*/
+	font-size: 14px;
+	text-align: center;
+}
+
+#notificationFrame {    
+	position: absolute;
+	top: 0px;
+    right: 0px;
+    width: 200px;
+	height:20px;
+	margin-right:2px;
+	margin-left:auto;
+	padding-right:15px;
+	padding-top:10px;
+	padding-bottom:10px;
+	text-align:right;
+}
+
+#printFrame {    
+	position: absolute;
+	top: 0px;
+    right: 0px;
+    width: 100%;
+	height: 100%;
+}
+
+.bright {
+	color: #FFFF99;
+}
+
+.emscripten { padding-right: 0; margin-left: auto; margin-right: auto; display: block; }
+textarea.emscripten { font-family: monospace; width: 80%; }
+div.emscripten { text-align: center; }
+div.emscripten_border { border: 0px solid black; }
+/* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+canvas.emscripten {border: 0px none; }
+html, body { width: 100%; height: 100%; margin: 0px 0px 0px 0px;}
+.spinner {
+	margin: 0 auto;
+	position: relative;
+	width: 35px;
+	height: 35px;
+	background: transparent;
+	-webkit-animation: rotation .8s linear 0s infinite normal none;
+	-moz-animation: rotation .8s linear 0s infinite normal none;
+	-ms-animation: rotation .8s linear 0s infinite normal none;
+	-o-animation: rotation .8s linear 0s infinite normal none;
+	animation: rotation .8s linear 0s infinite normal none;	
+	border-left: 10px solid rgb(15,59,128);
+	border-right: 10px solid rgb(15,59,128);
+	border-bottom: 10px solid rgb(15,59,128);
+	border-top: 10px solid rgb(15,59,128);
+	border-radius: 100%;
+	background-color: rgb(15,59,128);
+}
+
+.circle {
+	position: absolute;
+	background: #ffffff;
+	top: 30px;
+	left: 30px;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	opacity: .4;
+	-webkit-transform: rotate(0deg) translateX(1px);
+	-moz-transform: rotate(0deg) translateX(1px);
+	-ms-transform: rotate(0deg) translateX(1px);
+	-o-transform: rotate(0deg) translateX(1px);
+	transform: rotate(0deg) translateX(1px);
+}
+
+@-webkit-keyframes rotation {
+	from {-webkit-transform: rotate(0deg);}
+	to {-webkit-transform: rotate(360deg);}
+}
+@-moz-keyframes rotation {
+	from {-moz-transform: rotate(0deg);}
+	to {-moz-transform: rotate(360deg);}
+}
+@-ms-keyframes rotation {
+	from {-ms-transform: rotate(0deg);}
+	to {-ms-transform: rotate(360deg);}
+}
+@-o-keyframes rotation {
+	from {-o-transform: rotate(0deg);}
+	to {-o-transform: rotate(360deg);}
+}
+@keyframes rotation {
+	from {transform: rotate(0deg);}
+	to {transform: rotate(360deg);}
+}
+
+.iframecontainer {
+	width: 100%;
+	height: 100%;
+	border-style: hidden;
+	visibility: hidden;
+}
+
+.offscreen {
+	position: absolute;
+	top: -999em;
+	left: -999em;
+	margin-left:10px;
+}
+
+.modalBar {
+    position: absolute;
+    z-index: 1;
+    /*top: 10px;
+    left: 10px;*/
+    /*width: 240px; */
+	text-align: center;
+}
+
+.modalBar-content {
+    margin: auto;
+    width: 115%; 
+    height: 100%; 
+	display: inline-block;
+	white-space: nowrap;
+}
+
+.modal {
+    position: absolute;
+    z-index: 1;
+    width: 480px;
+    background-color: #FDFFFA;
+	text-align: center;
+	border-radius: 8px;
+	margin-bottom: 15px;
+	padding-bottom: 10px;
+}
+
+.modal-content {
+    background-color: #FDFFFA;
+    margin: auto;
+    width: 100%; 
+    height: 100%; 
+	display: inline-block;
+}
+
+/* The copy clipboard modal dialog (background) */
+.copy-modal {
+    display: none; /* Hidden by default */
+    position: absolute; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: hidden;
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* The copy clipboard modal dialog Content/Box */
+.copy-modal-content {
+	background-color: #fefefe;
+	margin: 15% auto; /* 15% from the top and centered */
+	padding: 20px;
+	border: 1px solid #888;
+	width: 50%; /* Could be more or less, depending on screen size */
+}
+
+/* The link modal dialog Content/Box */
+.link-modal-content {
+	background-color: #fefefe;
+	margin: 15% auto; /* 15% from the top and centered */
+	padding: 20px;
+	border: 1px solid #888;
+	width: 75%; /* Could be more or less, depending on screen size */
+}
+
+.icon {
+    position: relative;
+    float: left;
+	height: 25px;
+	margin-top: 7px;
+	padding-right: 7px;
+	padding-left: 2px;
+}
+
+.close {
+    position: relative;
+    color: #ffffff;
+    float: right;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: red;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.dialog {
+    background-color: #FDFFFA;
+    margin: auto; 
+}
+
+.buttonWrapper {
+    text-align: center;
+}
+
+.button{
+    background-color: #f0ad4e;
+	border: none;
+	color: black;
+	padding: 5px 16px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 16px;
+	border-radius: 4px;
+    border: 2px solid #f0ad4e;
+}
+
+.button:hover {
+    background-color: white;
+}
+
+.sidenav {
+    height: 100%; /* 100% Full-height */
+    width: 0; /* 0 width - change this with JavaScript */
+    position: fixed; /* Stay in place */
+    z-index: 3; /* Stay on top */
+    top: 0; /* Stay at the top */
+    left: 0;
+    background-color: #ffffff;
+    overflow-x: hidden; /* Disable horizontal scroll */
+    transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+	text-align: left;
+	border-right: 1px solid black;
+}
+
+.sidenavcontainer {
+	 background-color: #ffffff;
+}
+
+.sidenav .closebtn {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    font-size: 36px;
+    margin-left: 50px;
+    color: #ffffff;
+}
+
+.headerContainer {
+    height: 100px;
+	overflow: hidden;
+}
+
+.helpContainer {
+    padding: 0px 10px 10px 10px;
+}
+
+.helpSection {
+    /*margin-top: 20px;*/
+	display: none;
+	padding-bottom: 50px;
+}
+
+.logo {
+    position: absolute;    
+	top: 10px;
+    left: 10px;
+}
+
+.footer {
+    position: fixed;    
+	bottom: 0px;
+    left: 0px;
+	background-color: #ffffff;
+	width: 32%;
+    padding: 10px 0px 10px 20px;
+}
+
+.bold {
+	font-weight: bold;	
+}
+
+p.help {
+	font: 12px Verdana, Arial, Helvetica, sans-serif;
+	padding-left: 10px;
+}
+
+ol.help {
+	font: 12px Verdana, Arial, Helvetica, sans-serif;
+}
+
+div.helpTitle {
+    position: absolute;    
+	top: 10px;
+    left: 10px;
+	width: 85%;
+}
+
+h1.help {
+	font: 28px quicksand, Verdana, Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	color: #ffffff;
+	margin-top: 0px;
+	padding-left: 10px;
+	padding-top: 10px;
+}
+
+h2.help {
+	font: 22px quicksand, Verdana, Arial, Helvetica, sans-serif;
+	padding-bottom: 0px;
+	padding-top: 0px;
+	margin-bottom: 0px;
+	margin-top: 0px;
+	color: #00abc5; /* GraphOn teal */
+}
+
+h3.help {
+	font: 18px quicksand, Verdana, Arial, Helvetica, sans-serif;
+	padding-bottom: 10px;
+	padding-top: 0px;
+	padding-left: 10px;
+	margin-bottom: 0px;
+	margin-top: 0px;
+	color: #0f3b80; /* GraphOn blue */
+}
+
+img.help {
+	float: left;
+	width: 80px;
+	padding-bottom: 10px;
+	padding-top: 10px;
+}
+
+@font-face {
+	font-family: quicksand;
+	src: url(quicksand_bold.otf);
+}
+
+.col-container {
+    display: table;
+    width: 100%;
+}
+
+.col {
+    display: table-cell;
+}
+
+.center {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  height: 100px;
+}
+
+.BRAND {
+	visibility: hidden;
+}
+
+.OS {
+	visibility: hidden;
+	/*min-height: 90px;*/
+}
+
+.UI {
+	visibility: hidden;
+	display: none;		
+}
+
+.INSTALL_STEP1 {
+	visibility: visible;
+}
+
+.INSTALL_STEP2 {
+	visibility: visible;
+}
+
+.INSTALL_STEP3 {
+	visibility: hidden;
+}
+
+#menudiv {
+  position: absolute;
+  left: 20px;
+  z-index: 9;
+  text-align: center;
+  border-radius: 0px 0px 7px 7px;
+  border: 1px solid #cccccc;
+  border-top-width: 0px;
+}
+
+#menudivheader {
+  cursor: move;
+  z-index: 10;
+  background-color: #0f3b80;
+  color: #fff;
+  border-radius: 0px 0px 7px 7px;
+}
+
+#leftImage {
+	float: left;
+	padding-right: 10px;
+	padding-left: 5px;
+}
+
+#helpbutton {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+    height: 20px;
+    z-index: 3; /* Stay on top */
+    background-color: #bbbbbb;
+	text-align: center;
+	padding: 10px 10px 0px 10px;
+	line-height: 10px;
+	font-weight: bold;
+	border-radius: 0px 0px 0px 8px;
+}
+
+.leftJustify {	
+	text-align: left;
+	padding-left: 35px;	
+}

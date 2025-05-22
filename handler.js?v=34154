@@ -1,0 +1,1291 @@
+window.onload = init;
+
+var isInstallingApp = false;
+var approvedInstaller = false;
+var defaultHelpPage = "quickstart.html"
+var defaultSection = "AC_Startup";
+var currentHelpPage = ""
+var isShowingReconnectMessage = false;
+var successCallbackCalled = false;
+var getTheAppString = "A new version of AppController is available. Click to install."
+var upgradeTheAppString = "Upgrade AppController"
+var startingSessionString = "Starting session..."
+var cancelString = "Cancel"
+var reconnectString = "Connect to host again";
+var maxLocalizedStringId = 0;
+
+function init() {
+	console.log("init %s", window.location.toString());
+	var loc = window.location.toString();
+	var hash = window.location.hash.toString()
+	var urlParams = loc.split('?')[1];
+		
+	var iFL = document.getElementById('iFrameLogon');
+	if (iFL != null)
+	{
+		if (controlArguments)
+		{
+			if (!(controlArguments.hasOwnProperty("useApp") && controlArguments["useApp"] == "false"))
+			{
+				iFL.style.visibility = "hidden";
+			}
+		}
+		
+		if (urlParams)
+		{
+			if ((!(urlParams.indexOf("useApp=false") >= 0)) && (!(urlParams.indexOf("help=ac") >= 0)))
+			{
+				iFL.style.visibility = "hidden";
+			}
+			else
+			{
+				iFL.style.visibility = "visible";
+			}
+		}
+		
+		if (urlParams == undefined)
+		{
+			iFL.src = "webapp.html?v=34154" + hash;
+		}
+		else {		
+			iFL.src = "webapp.html?v=34154&" + urlParams;
+		}
+	}
+	
+	if (urlParams && (urlParams.indexOf("help=") >= 0))
+	{
+		var n = urlParams.indexOf("help=");		
+		var helpFile = urlParams.substring(n);
+		
+		if (helpFile == "help=ac")
+		{
+			window.location.search = "?host=127.0.0.1&useApp=false&adminWithArgs=true&app=adminconsole&args=-eventNotifications&help=quickstart&noscale=true";
+			return;
+		}		
+		
+		helpFile = helpFile.split('=')[1];
+		helpFile = helpFile.split('&')[0];
+				
+		var m = urlParams.indexOf("section=");		
+		var helpSection = urlParams.substring(m);
+		
+		helpSection = helpSection.split('=')[1];
+		helpSection = helpSection.split('&')[0];
+		
+		setPage(helpFile, helpSection);
+	}
+}
+
+function AddInstallAppLink() {
+    console.log("AddInstallAppLink");
+	ShowDownloadLink(getTheAppString);
+    return 0; // success
+}
+
+function AddUpgradeAppLink() {
+    console.log("AddUpgradeAppLink");
+	ShowDownloadLink(upgradeTheAppString);
+    return 0; // success
+}
+
+function RemoveInstallAppLink() {
+    var modal = document.getElementById('installApp');
+    var notify = document.getElementById('notificationFrame');
+    notify.innerHTML = '';
+}
+
+function ApproveNativeApp() {
+	console.log("ApproveNativeApp");
+	
+	nextState = window.localStorage.getItem('nextState');
+	
+	if (nextState != undefined) {
+		SetState(nextState);		
+		UpdateUI(nextState);
+		window.localStorage.removeItem("nextState");
+	}
+	
+	return 0; // success
+}
+
+function InitiateNativeAppInstall() {
+    var logonDocument = document.getElementById('iFrameLogon').contentDocument;
+    var webappWindow = logonDocument.getElementById('iFrameWebApp').contentWindow;
+    webappWindow.InitiateAppInstall();
+}
+
+function InstallNativeApp() {
+    console.log("InstallNativeApp");
+
+	if (browser.android) {
+		var state = window.localStorage.getItem('INSTALLED_STATE');
+		if (state != 'installed') {				
+			var modal = document.getElementById('installAndroid');
+			modal.style.display = "inline-block";	
+		}
+	}
+	else if (browser.ios) {		
+		var state = window.localStorage.getItem('INSTALLED_STATE');
+		if (state != 'installed') {	
+			var modal = document.getElementById('installiOS');
+			modal.style.display = "inline-block";	
+		}
+	}
+	else if (browser.firefox || browser.chrome) {
+		var state = window.localStorage.getItem('INSTALLED_STATE');
+		if (state == 'installed'){
+			//document.getElementById('msgFrame').innerHTML = '<div class="buttonWrapper"><a href="#" onclick="window.parent.location.reload()">Click to connect to ' + location.hostname + '</a><br>Do not use the browser\'s reload button</div>';
+
+			return;
+		}
+		else if (state == 'running') {
+			window.localStorage.setItem('INSTALLED_STATE', 'installed');
+			return;
+		}
+		else if (state == 'unknown') {
+		}
+	}
+
+    // IE and Chrome interpret focus lost events as indicators that
+    // the native app has been launched. But when the app is installed,
+    // the browser loses the focus twice before the native app is 
+    // launched: once when user clicks to download the app's installer
+    // and again when the installer starts. If the host is trying to 
+    // launch the app when either of these focus lost events occurs,
+    // the browser will erroneously notify the host that the app has
+    // been launched. To prevent this from occurring, the following
+    // code prevents the browser from trying to launch the native app 
+    // until the browser has lost and regained the focus twice.
+    var target = window;
+    while (target != target.parent) {
+        target = target.parent;
+    }
+
+    isInstallingApp = true;
+
+    target.focus();
+    var focusEvent = registerEvent(target, "focus", onFocus);
+
+    function onFocus() {
+        if (approvedInstaller == true || browser.mac) 
+            isInstallingApp = false;
+        else
+            approvedInstaller = true
+    }
+
+    var focusTimeout = setTimeout(function () {
+        focusEvent.remove();
+        isInstallingApp = false;
+    }, 25000);
+
+	var bDisplayInstallApp = true;
+	try {
+		bDisplayInstallApp = parent.window.InstallNativeAppCB()
+	} catch (e) { bDisplayInstallApp = true; }
+
+	if (bDisplayInstallApp) {
+		var modal = document.getElementById('installApp');
+		modal.style.display = "inline-block";
+
+		//var dlFrame = document.getElementById("dialogFrame");
+		//dlFrame.innerHTML = '<iframe id="installFrame" width="400" height="200" border-style="hidden" src="install.html"><iframe>';
+	}
+	
+	return 0; //success
+}
+
+function LaunchNativeApp(credentials) {
+	console.log("LaunchNativeApp");
+	return testForHandler(credentials, successCallbackNativeAppIsInstalled, failCallbackNativeAppIsNotInstalled);
+}
+function CloseNativeAppDialogs() {
+    closeDialog();
+    return 0; // success
+}
+function cancelDialog() {	
+	console.log("cancelDialog");
+	closeDialog();
+	
+	if ((parent) && (parent.document) && (parent.document.getElementById('iFrameLogon'))) {	
+		var logonDocument = parent.document.getElementById('iFrameLogon').contentDocument;
+		var webappWindow = logonDocument.getElementById('iFrameWebApp').contentWindow;
+		webappWindow.UseWebApp();
+	}
+	else if ((document) && (document.getElementById('iFrameLogon'))) {	
+		var logonDocument = document.getElementById('iFrameLogon').contentDocument;
+		var webappWindow = logonDocument.getElementById('iFrameWebApp').contentWindow;
+		webappWindow.UseWebApp();
+	}
+}
+
+function closeDialog() {
+	console.log("closeDialog");
+	var modal = document.getElementById('installApp');
+	
+	if (modal == null) {
+		modal = parent.document.getElementById('installApp');
+	}
+
+	if (modal != null) {
+	    modal.style.display = "none";
+	}	
+
+	var outeriFrame = document.getElementById('iFrameLogon');	
+	
+	if (outeriFrame != null) {
+		
+		outeriFrame.style.visibility = "visible";
+	    outeriFrame.style.display = "inline";
+		
+		var outerDoc = (outeriFrame.contentDocument) ? outeriFrame.contentDocument : outeriFrame.contentWindow.document;
+		
+		if (outerDoc) {		
+			var inneriFrame = outerDoc.getElementById('iFrameWebApp');		
+
+			if (inneriFrame != null) {				
+				inneriFrame.style.visibility = "visible";
+				inneriFrame.style.display = "inline";
+			}
+		}
+	}	
+}
+
+function openDialog() {	
+    console.log("openDialog");
+	UpdateUI(GetState());
+	
+	var modal = document.getElementById('installApp');
+	
+	if (modal == null) {
+		modal = parent.document.getElementById('installApp');
+	}
+
+	if (modal != null) {
+	    modal.style.display = "inline-block";
+	}
+	
+	var iFL = document.getElementById('iFrameLogon');
+	if (iFL != null)
+	{
+		iFL.style.visibility = "none";
+	    iFL.style.display = "none";
+	}
+}
+
+function ReloadPage()
+{
+    console.log("ReloadPage");
+	var storedURLPart = localStorage.getItem('OIDCURLPART');
+	if (storedURLPart !== undefined && storedURLPart !== null) {
+		window.location.href = storedURLPart;
+	}
+	else {
+		//alert(Error().stack);
+		location.reload();
+	}
+		
+}
+
+function NativeAppConnectedNotification(isEmbedded) {
+    console.log("NativeAppConnectedNotification");
+	
+    closeDialog();
+		
+	if (isEmbedded == "false") {
+		
+		//var startSession = document.getElementById('startingSession');
+		//if (startSession != undefined) {
+		//	startSession.innerHTML = null;
+		//}
+
+		var iFrameHiddenWebApp = parent.document.getElementById('iFrameHiddenWebApp');
+		if (iFrameHiddenWebApp != undefined) {
+			iFrameHiddenWebApp.style.visibility = "hidden";
+			iFrameHiddenWebApp.style.width = 0;
+			iFrameHiddenWebApp.style.height = 0;
+
+			try {
+				parent.window.NativeAppConnectedNotificationCB();
+			} catch (e) { }
+		}
+		else {
+			window.localStorage.setItem("nextState", "UI_NONE");
+			//ShowReconnectLink();
+		}
+    }
+
+	window.localStorage.setItem('INSTALLED_STATE', 'installed');
+}
+
+function WebAppConnectedNotification() {
+    console.log("WebAppConnectedNotification");
+	
+	closeDialog();
+}
+
+function successCallbackNativeAppIsInstalled () {
+    console.log("successCallbackNativeAppIsInstalled");
+
+    successCallbackCalled = true;
+
+    RemoveInstallAppLink();
+
+    var logonDocument = document.getElementById('iFrameLogon').contentDocument;
+    var webappWindow = logonDocument.getElementById('iFrameWebApp').contentWindow;
+    webappWindow.NativeAppIsInstalled();
+
+	
+	if (GetState() == "UI_FIRSTLOAD") {
+		UpdateState("UI_LOADING");
+	}
+}
+
+function failCallbackInstallFullVersion () {
+	console.log("failCallbackInstallFullVersion");
+	AddInstallAppLink();
+}
+
+function failCallbackNativeAppIsNotInstalled () {
+    console.log("failCallbackNativeAppIsNotInstalled");
+
+    successCallbackCalled = false;
+
+	var logonDocument = document.getElementById('iFrameLogon').contentDocument;
+	
+	if (logonDocument) {
+		var webappWindow = logonDocument.getElementById('iFrameWebApp').contentWindow;
+		
+		if (webappWindow) {
+			
+			var state = window.localStorage.getItem('INSTALLED_STATE');
+			
+			if (state == undefined)	{
+				webappWindow.NativeAppIsNotInstalled();
+			}
+		}
+	}
+	
+	if (GetState() == "UI_FIRSTLOAD") {
+		UpdateState("UI_LOADING");
+	}
+}
+
+function convertCommandLine(commandLine) {	
+	var url = "";
+	var data = commandLine.split(" ");
+	var previousParam = false;
+	
+	for (var i = 0; i < data.length; i++) {		
+		if ((data[i] == undefined) || (data[i] == " ") || (data[i] == "")) {			
+			// do nothing
+		}		
+		else if (data[i].charAt(0) == "-") {			
+			if (previousParam == true) {
+				url += "=true&";
+				previousParam = false;
+			}
+			else {			
+				previousParam = true;
+			}
+			
+			url += data[i].substr(1);
+		}
+		else {
+			previousParam = false;
+			url += "=";
+			url += data[i];
+			
+			if (i < (data.length - 2)) {
+				url += "&";
+			}
+		}		
+	}	
+	
+	return url;
+}
+
+function testForHandler(credentials, successCb, failCb) {
+    var result = 0;
+	console.log("testForHandler");
+
+	var commandLine = credentials + " " + buildCommandLine(0);
+
+	if (commandLine.indexOf(" -h ") == -1) {
+	    // Connect to the host from which the page was downloaded:
+	    commandLine = " -h " + location.hostname + commandLine;
+	}
+	
+	var handlerAddress = "AppController://?" + commandLine;
+	console.log(handlerAddress);
+
+	if (navigator.msLaunchUri) {
+		console.log("edge/IE detected");
+		navigator.msLaunchUri(handlerAddress, successCb, failCb);
+	}
+	else if ((browser.android) || (browser.ios) || (browser.cros)) {
+		
+		var url = convertCommandLine(commandLine);		
+		handlerAddress = "AppController://?" + url;
+		
+		if (browser.android) {
+			console.log("Android detected");			
+			var linkAndroid = document.getElementById("linkAndroid");
+			
+			if (linkAndroid) {
+				linkAndroid.title = handlerAddress;
+			}
+			
+			if ((GetState() != "UI_DOWNLOAD") && (GetState() != "UI_LOADING")) {
+				//UpdateState("UI_LAUNCH");
+			}
+		}
+		else if (browser.ios) {
+			console.log("iOS detected");	
+			var linkIOS = document.getElementById("linkIOS");
+			
+			if (linkIOS) {
+				linkIOS.title = handlerAddress;
+			}
+
+			if ((GetState() != "UI_DOWNLOAD") && (GetState() != "UI_LOADING")) {
+				//UpdateState("UI_LAUNCH");
+			}		
+		}
+		else if (browser.cros) {
+            console.log("cros detected");
+			var linkChrome = document.getElementById("linkChrome");
+			
+			if (linkChrome) {
+				linkChrome.title = handlerAddress;
+			}
+
+			if ((GetState() != "UI_DOWNLOAD") && (GetState() != "UI_LOADING")) {
+				//UpdateState("UI_LAUNCH");
+			}			
+		}			
+		
+		var logonDocument = document.getElementById('iFrameLogon').contentDocument;
+
+		if (logonDocument) {
+			var webappWindow = logonDocument.getElementById('iFrameWebApp').contentWindow;		
+		}
+		
+		var state = window.localStorage.getItem('INSTALLED_STATE');
+		
+		if (state == undefined)	{
+			if (webappWindow) {
+				webappWindow.NativeAppIsNotInstalled();
+			}
+		}
+		else if ((state == 'installed') || (state == 'running') || (state == 'unknown')) {
+			if (webappWindow) {
+				webappWindow.NativeAppIsInstalled();
+			}
+		}
+	}
+	else if (browser.msie) {
+		console.log("msie detected");
+		openUriWithHiddenFrame(handlerAddress, successCb, failCb, 2000);
+	}
+	else if (browser.firefox) {
+		console.log("firefox detected");
+		openUriUsingFirefox(handlerAddress, successCb, failCb);
+	}
+	else if (browser.chrome) {
+		console.log("chrome detected");
+		openUriWithTimeout(handlerAddress, successCb, failCb, 3000);
+	}
+	else if (browser.cros) {
+		console.log("cros detected");
+		//Nothing to do here
+		result = 1;
+    }
+	else if (browser.safari) {
+		console.log("safari detected");	
+		openUriWithHiddenFrame(handlerAddress, successCb, failCb, 2000);
+	}
+	else {
+	    console.log("no browser detected");
+	    result = 2;
+	}
+
+	return result;
+}
+
+//Used by Windows 7 IE 11
+function openUriWithHiddenFrame(uri, successCb, failCb, msTimeout) {
+	console.log("openUriWithHiddenFrame");
+
+	var timeout = setTimeout(function () {
+        failCb();
+        blurEvent.remove();
+	}, msTimeout);
+
+	    var iframe = document.querySelector('#hiddenIframeUriHandler');
+	    if (!iframe) {
+	        iframe = createHiddenIframe(document.body, "about:blank");
+	    }
+
+	    window.focus();
+	    var blurEvent = registerEvent(window, "blur", onBlur);
+
+	    function onBlur() {
+	        clearTimeout(timeout);
+	        blurEvent.remove();
+	        successCb();
+	    }
+
+	iframe.contentWindow.location.href = uri;
+}
+
+//Used by Chrome
+function openUriWithTimeout(uri, successCb, failCb, msTimeout) {
+	console.log("openUriWithTimeout");
+
+	//handle page running in an iframe (blur must be registered with top level window)
+	var target = window;
+	while (target != target.parent) {
+		target = target.parent;
+	} 
+
+	if (!isInstallingApp) {
+
+	    target.focus();
+	    var blurEvent = registerEvent(target, "blur", onBlur);
+
+	    function onBlur() {
+	        clearTimeout(timeout);
+	        blurEvent.remove();
+	        successCb();
+	    }
+
+	    var timeout = setTimeout(function () {
+	        failCb();
+	        blurEvent.remove();
+	    }, msTimeout);
+
+	window.location = uri;
+}
+	else {
+	    failCb();
+	}
+}
+
+//Used by FireFox
+function openUriUsingFirefox (uri, successCb, failCb) {
+    console.log("openUriUsingFirefox");
+
+	var iframe = document.querySelector('#hiddenIframeUriHandler');
+	if (!iframe) {
+	    iframe = createHiddenIframe(document.body, 'about:blank');
+	}
+
+	if (browser.firefoxversion >= 64) {
+
+	    var timeout = setTimeout(function () {
+	        failCb();
+	        blurEvent.remove();
+	    }, 1000);
+
+	    function onBlur() {
+	        clearTimeout(timeout);
+	        blurEvent.remove();
+	        successCb();
+	    }
+
+	    // Register the blur event on the webappWindow because it won't fire 
+	    // if it's set on the root window when the WebApp is loaded:
+	    var logonDocument = document.getElementById('iFrameLogon').contentDocument;
+	    var webappWindow = logonDocument.getElementById('iFrameWebApp').contentWindow;
+	    webappWindow.focus();
+	    var blurEvent = registerEvent(webappWindow, "blur", onBlur);
+
+	    iframe.contentWindow.location.href = uri;
+
+	}
+	else {
+
+	    try {
+	        iframe.contentWindow.location.href = uri;
+	        successCb();
+	    }
+	    catch (e) {
+	        if (e.name === 'NS_ERROR_UNKNOWN_PROTOCOL') {
+	            failCb();
+	        }
+	    }
+	}
+}
+
+//Used by Safari
+function openUriUsingIE10InWindows7(uri, successCb, failCb, msTimeout) {
+	console.log("openUriUsingIE10InWindows7");
+	var timeout = setTimeout(failCb, msTimeout);
+	window.addEventListener("blur", function () {
+		clearTimeout(timeout);
+		successCb();
+	});
+
+	var iframe = document.querySelector('#hiddenIframeUriHandler');
+	if (!iframe) {
+		iframe = createHiddenIframe(document.body, "about:blank");
+	}
+	try {
+		iframe.contentWindow.location.href = uri;
+	} catch (e) {
+		failCb();
+		clearTimeout(timeout);
+	}
+}
+
+function openUriInNewWindow(uri, successCb, failCb, msTimeout) {
+	console.log("openUriInNewWindow");
+	var myWindow = window.open('', '', 'width=0,height=0');
+
+	myWindow.document.write("<iframe src='" + uri + "'></iframe>");
+
+	setTimeout(function () {
+		try {
+			myWindow.location.href;
+			myWindow.setTimeout("window.close()", msTimeout);
+			successCb();
+		} catch (e) {
+			myWindow.close();
+			failCb();
+		}
+	}, msTimeout);
+}
+
+function createHiddenIframe (target, uri) {
+	console.log("createHiddenIframe");
+	var iframe = document.createElement('iframe');
+	iframe.src = uri;
+	iframe.id = 'hiddenIframeUriHandler';
+	iframe.style.display = 'none';
+	target.appendChild(iframe);
+
+	return iframe;
+}
+
+function registerEvent(target, eventType, cb) {
+	console.log("registerEvent " + eventType);
+	if (target.addEventListener) {
+		target.addEventListener(eventType, cb);
+		return {
+			remove: function () {
+				target.removeEventListener(eventType, cb);
+			}
+		};
+	} else {
+		target.attachEvent(eventType, cb);
+		return {
+			remove: function () {
+				target.detachEvent(eventType, cb);
+			}
+		};
+	}
+}
+
+function hideSections()
+{	
+	var sections = document.getElementsByClassName("helpSection");
+	
+	for (var i = 0; i < sections.length; i++) {		
+		sections[i].style.display = "none";
+	}
+}
+
+function displaySection(id)
+{	
+	hideSections();
+
+	var sections = document.getElementsByClassName("helpSection");
+	
+	for (var i = 0; i < sections.length; i++) {		
+		if (sections[i].id == id) {
+			sections[i].style.display = "block";			
+		}
+	}
+
+	LocalizeText();
+}
+
+function setPage(page, section)
+{
+	section = section || "";
+	
+	if (((typeof page) != "string") || (page == "ac"))
+	{
+		page = defaultHelpPage;
+	}
+	
+	if ((section == "") || (section == "ac"))
+	{
+		section = defaultSection;
+	}	
+	
+	if ((currentHelpPage != page) && (page != ""))
+	{	
+		currentHelpPage = page;
+	}
+	
+	helpPage = "help\\" + currentHelpPage;
+	help = document.getElementById("helpContainer");
+
+	help.setAttribute("title", helpPage);
+	
+	includeHTML();
+	openNav();
+	
+	if (section != "")
+	{
+		setTimeout(function () {displaySection(section);}, 500);
+	}
+}
+
+function openNav()
+{	
+	document.getElementById("mySidenav").style.width = "35%";
+	document.getElementById("mySidenav").style.display = "block";
+	document.getElementById("main").style.marginLeft = "35%";
+	document.getElementById("copyClipboardModal").style.width = "65%";
+	
+	var help = document.getElementById('helpButton');
+	if (help != null)
+	{
+		help.onclick = closeNav;
+	}	
+}
+
+function closeNav() {
+	document.getElementById("mySidenav").style.width = "0";
+	document.getElementById("mySidenav").style.display = "none";
+	document.getElementById("main").style.marginLeft = "0";
+	document.getElementById("copyClipboardModal").style.width = "100%";
+	
+	var help = document.getElementById('helpButton');
+	if (help != null)
+	{
+		help.onclick = openNav;
+	}	
+}
+
+function includeHTML() {
+	elmnt = document.getElementById("helpContainer");
+	file = elmnt.getAttribute("title");
+	
+    if (file) {
+		xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4) {
+				if (this.status == 200) {
+					elmnt.innerHTML = this.responseText;
+				}
+
+				if (this.status == 404) {
+					setPage(defaultHelpPage);
+				}
+			}
+		}
+
+		xhttp.open("GET", file, true);
+		xhttp.send();
+
+		return;
+	}
+}
+
+function showReconnectMessageBox(message)
+{
+    console.log("showReconnectMessageBox");
+    console.log(message);
+    
+/*	var msgFrame = document.getElementById('msgFrame');
+	
+	if (msgFrame) {
+		msgFrame.innerHTML = message + '<div class="buttonWrapper"><a href="#" onclick="cancelReconnect()">' + cancelString + '</a></div>';
+		msgFrame.style.display = "block";
+		isShowingReconnectMessage = true;
+	}
+*/
+}
+
+function hideReconnectMessageBox()
+{
+/*    if(isShowingReconnectMessage)
+    {
+        console.log("hideReconnectMessageBox");  
+        
+		var msgFrame = document.getElementById('msgFrame'); 
+		
+		if (msgFrame) {  
+			msgFrame.innerHTML = '';
+			msgFrame.style.display = "none";
+			isShowingReconnectMessage = false;
+		}
+    }
+*/
+}
+
+function cancelReconnect() {
+    console.log("cancelReconnect");
+    
+    var logonDocument = document.getElementById('iFrameLogon').contentDocument;
+    var webappWindow = logonDocument.getElementById('iFrameWebApp').contentWindow;
+    webappWindow.CancelReconnect();
+}
+
+function ResetBrand() {
+    console.log("ResetBrand");	
+	
+	try {BRAND_ELEMENT_LIST;}
+	catch(e) {
+		console.log("Include brand.js to remove the following message:");
+		console.log(e);
+		return;
+	}
+	
+	for (x = 0; x < BRAND_ELEMENT_LIST.length; x++) {		
+		localStorage.removeItem(BRAND_ELEMENT_LIST[x]);
+	}
+	
+	for (x = 0; x < BRAND_IMG_LIST.length; x++) {		
+		localStorage.removeItem(BRAND_IMG_LIST[x]);
+	}
+}
+
+function SetBrandedText(elementID, elementText) {
+    console.log("SetBrandedText");	
+	
+	try {BRAND_ELEMENT_LIST;}
+	catch(e) {
+		console.log("Include brand.js to remove the following message:");
+		console.log(e);
+		return;
+	}
+	
+	if (BRAND_ELEMENT_LIST.includes(elementID)) {
+		localStorage.setItem(elementID, elementText);
+	}
+}
+
+function SetBrandedImage(imageID, imageStyle, containerStyle, imgBase64) {
+    console.log("SetBrandedImage");
+	
+	try {BRAND_IMG_LIST;}
+	catch(e) {
+		console.log("Include brand.js to remove the following message:");
+		console.log(e);
+		return;
+	}
+	
+	if (BRAND_IMG_LIST.includes(imageID)) {
+		var storedImage = JSON.parse(localStorage.getItem(imageID));
+		
+		if (storedImage) {			
+			localStorage.setItem(imageID, JSON.stringify({
+				imageStyle: imageStyle,
+				containerStyle: containerStyle,
+				imagedata: (storedImage.imagedata + imgBase64)
+			}));	
+		}
+		else {
+			var imageStr = 'data:image/png;base64,' + imgBase64;
+
+			localStorage.setItem(imageID, JSON.stringify({
+				imageStyle: imageStyle,
+				containerStyle: containerStyle,
+				imagedata: imageStr
+			}));	
+		}		
+	}
+}
+
+function ApplyBrand() {
+    console.log("ApplyBrand");	
+	
+	try {BRAND_ELEMENT_LIST;}
+	catch(e) {
+		console.log("Include brand.js to remove the following message:");
+		console.log(e);
+		return;
+	}
+	
+	BrandContents();
+}
+
+function GetBrandToken() {
+    console.log("GetBrandToken");	
+	var brandToken = JSON.parse(localStorage.getItem("BRAND_TOKEN"));
+	
+	if (brandToken == null)
+	{
+		brandToken = "0";
+	}
+	
+	return brandToken;
+}
+
+function SetBrandToken(brandToken) {
+	localStorage.setItem("BRAND_TOKEN", brandToken);
+}
+
+function StartOpenIDConnectAuthentication(URI) {
+	localStorage.setItem('OIDCURLPART', window.location.href);
+	window.location.replace(URI);
+}
+
+function ShowHideStartingSessionProgressMessage(bShow) {	
+	var startSession = document.getElementById('startingSession');
+	
+	if (startSession != undefined) {			
+		if (bShow == "true")
+			startSession.innerHTML = '<h2 align="center">' + startingSessionString + '</h2>';
+		else
+			startSession.innerHTML = '';		
+	}
+}
+
+function GetOS() {
+	if (!browser) {
+		browser = new GetPlatform();
+	}
+	
+	var os = "OS_UNKNOWN";
+	
+	if (browser.win)
+	{
+		if (allUsers == "true")
+		{
+			os = "OS_WINDOWS_ALLUSERS";			
+		}
+		else
+		{
+			os = "OS_WINDOWS";
+		}
+	}
+	else if (browser.ios)
+	{
+		os = "OS_IOS";
+	}
+	else if (browser.cros)
+	{
+		os = "OS_CHROME";
+	}
+	else if (browser.android)
+	{
+		os = "OS_ANDROID";
+	}
+	else if (browser.mac)
+	{
+		os = "OS_MAC";
+	}
+	else if (browser.linux)
+	{
+		if ((browser.redhat) || (browser.suse))
+		{
+			os = "OS_LINUX_REDHAT";			
+		}
+		else if (browser.ubuntu)
+		{
+			os = "OS_LINUX_DEBIAN";			
+		}
+		else
+		{
+			os = "OS_LINUX_UNKNOWN";
+		}
+	}
+	
+	return os;
+}
+
+function ShowReconnectLink() {
+	console.log("ShowReconnectLink");	
+	
+	var endPointName = window.localStorage.getItem('BRAND_NAME_ENDPOINT');
+	var reconnectStringWithHostName = reconnectString;
+	
+	if (endPointName) {
+		reconnectStringWithHostName = reconnectStringWithHostName.replace(hostString, " " + endPointName + " ");	
+	}
+	else if (location.hostname) {
+		reconnectStringWithHostName = reconnectStringWithHostName.replace(hostString, " " + location.hostname + " ");
+	}
+	
+	AddBarMessage(reconnectStringWithHostName, "UI_RECONNECT");
+	
+	var iFL = document.getElementById('iFrameLogon');
+	if (iFL != null)
+	{
+		iFL.style.visibility = "none";
+	}
+	closeDialog();
+	TweakUI();
+}
+
+function ShowDownloadLink(message)
+{
+	console.log("ShowDownloadLink");
+	var state = "UI_DOWNLOAD";
+	
+	var os = GetOS();
+	
+	var osDownload = "javascript:void(0)";
+		
+	if (os == "OS_WINDOWS_ALLUSERS") {
+		osDownload = "Clients/AppController.AllUsers.exe";
+	}
+	else if (os == "OS_WINDOWS") {
+		osDownload = "Clients/AppController.exe";
+	}
+	else if (os == "OS_MAC") {
+		osDownload = "Clients/AppController.dmg";
+	}
+	else if (os == "OS_LINUX_REDHAT") {
+		osDownload = "Clients/AppController.rpm";
+	}
+	else if (os == "OS_LINUX_DEBIAN") {
+		osDownload = "Clients/AppController.deb";
+	}
+	else if (os == "OS_IOS") {
+		state = "UI_DOWNLOAD";
+	}
+	else if (os == "OS_CHROME") {
+		state = "UI_DOWNLOAD";
+	}
+	else if (os == "OS_ANDROID") {
+		state = "UI_DOWNLOAD";
+	}
+
+	AddBarMessage(message, state, osDownload);	
+
+	TweakUI();
+}
+
+Array.prototype.includes = function (str) {
+	var returnValue = false;
+
+	if (this.indexOf(str) !== -1) {
+		returnValue = true;
+	}
+
+	return returnValue;
+}
+
+// Create Element.remove() function if not exist
+if (!('remove' in Element.prototype)) {
+    Element.prototype.remove = function() {
+        if (this.parentNode) {
+            this.parentNode.removeChild(this);
+        }
+    };
+}
+
+function SetLocalizedText(elementID, elementText) {
+    	//console.log("SetLocalizedText");	
+	//console.log(elementID);
+	//console.log(elementText);
+
+	if(elementID > maxLocalizedStringId)
+	{
+		maxLocalizedStringId = elementID;
+	}
+
+	var storageID = "LocalizedString_" + elementID.toString();
+	localStorage.setItem(storageID, elementText);
+}
+
+function LocalizeText() {
+    	//console.log("LocalizeText " + maxLocalizedStringId.toString());	
+
+	var localizedTextMap = localStorage.getItem("LocalizedTextMap");
+
+	for (x = 0; x < maxLocalizedStringId; x++)	
+	{
+		var storageID = "LocalizedString_" + x.toString();
+    		var elementText = localStorage.getItem(storageID, elementText);
+		if(elementText)
+		{
+			switch(x)
+			{
+				case 1:
+					var element = document.getElementById('connectingMessage');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 2:
+					var element = document.getElementById('runDownload');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 3:
+					var element = document.getElementById('runInstall');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 4:
+					var element = document.getElementById('promptMessage');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 5:
+					var element = document.getElementById('nothingHappening');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 6:
+					var element = document.getElementById('DownloadWindows');
+					if(element) element.innerHTML = elementText;
+					element = document.getElementById('DownloadWindowsAllUser');
+					if(element) element.innerHTML = elementText;
+					element = document.getElementById('DownloadMac');
+					if(element) element.innerHTML = elementText;
+					element = document.getElementById('DownloadRedHat');
+					if(element) element.innerHTML = elementText;
+					element = document.getElementById('DownloadDebian');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 7:
+					var element = document.getElementById('InstallAndroid');
+					if(element) element.innerHTML = elementText;
+					element = document.getElementById('InstallChrome');
+					if(element) element.innerHTML = elementText;
+					element = document.getElementById('InstallIOS');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 8:
+					var element = document.getElementById('linkAndroid');
+					if(element) element.innerHTML = elementText;
+					element = document.getElementById('linkChrome');
+					if(element) element.innerHTML = elementText;
+					element = document.getElementById('linkIOS');
+					if(element) element.innerHTML = elementText;
+					element = document.getElementById('startButton');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 9:
+					var element = document.getElementById('runInBrowserLink');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 10:
+					var element = document.getElementById('getHelp');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 11:
+					var element = document.getElementById('securityRestrictions');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 12:
+					var element = document.getElementById('confirmationCheckbox');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 13:
+					var element = document.getElementById('copy_link_text');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 14:
+					var element = document.getElementById('copy_text');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 15:
+					var element = document.getElementById('copyLink');
+					if(element) element.innerHTML = elementText;
+					element = document.getElementById('copy');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 16:
+					reconnectString = elementText;
+					break;
+				case 17:
+					var element = document.getElementById('confirmYes');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 18:
+					var element = document.getElementById('confirmNo');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 19:
+					var element = document.getElementById('clientHelpTitle');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 20:
+					var element = document.getElementById('clientHelpDesc');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 21:
+					var element = document.getElementById('clientHelpDownload');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 22:
+					var element = document.getElementById('clientHelpDownloadDesc');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 23:
+					var element = document.getElementById('clientHelpConnect');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 24:
+					var element = document.getElementById('clientHelpConnectDesc');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 25:
+					var element = document.getElementById('clientHelpApprove');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 26:
+					var element = document.getElementById('clientHelpApproveDesc');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 27:
+					var element = document.getElementById('clientHelpSignIn');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 28:
+					var element = document.getElementById('clientHelpSignInDesc');
+					if(element) element.innerHTML = elementText;
+					break;
+				case 29:
+					connectingtoString = elementText;
+					break;
+				case 30:
+					hostString = elementText;
+					break;
+				case 31:
+					pleaseCopyString = elementText;
+					break;
+				case 32:
+					getTheAppString = elementText;
+					break;
+				case 33:
+					upgradeTheAppString = elementText;
+					break;
+				case 34:
+					cancelString = elementText;
+					break;
+				case 35:
+					startingSessionString = elementText;
+					break;
+				case 36:
+					for (index = 1; index < 11; index++)
+					{
+						var id = "quickHelpTitle" + index.toString();
+						var element = document.getElementById(id);
+						if(element) element.innerHTML = elementText;
+					}
+					break;
+			}
+
+			if((x > 36) && (x < 87))
+			{
+				var index = x - 36;
+				var element = document.getElementById("quickHelp" + index.toString());
+				if(element) element.innerHTML = elementText;
+			}
+						
+			switch(x)
+			{
+				case 87:
+					nativeClientDisabledString = elementText;
+					break;
+				//case 88: // The next localized string goes here
+				//	nextLocalizedString = elementText;
+				//	break;
+			}				
+		}
+	}
+}

@@ -1,0 +1,234 @@
+var BRAND_ELEMENT_LIST = [
+"BRAND_NAME_INSTALLER",
+"BRAND_NAME_COMPANY", 
+"BRAND_NAME_PRODUCT",
+"BRAND_INSTALL_INSTRUCTIONS",
+"BRAND_CLIENT_COLOR",
+"BRAND_BACKGROUND_COLOR",
+"BRAND_NAME_ENDPOINT"
+];
+
+var BRAND_IMG_LIST = [
+"BRAND_IMG_LOGO",
+"BRAND_IMG_BACKGROUND"];
+
+var DEFAULT_ELEMENT_STRINGS = [
+"GO-Global.",
+"GraphOn",
+"GO-Global",
+"*",
+"#0f3b80",
+"#FFFFFF"
+];
+	
+function BrandContents() {
+	console.log("BrandContents()");
+	BrandColors();
+	BrandText();
+	BrandImages();
+	
+	// TODO: move
+	UpdateState();	
+}
+
+function invertColor(hex, bw) {
+    if (hex.indexOf('#') === 0) {
+        hex = hex.slice(1);
+    }
+	
+    if (hex.length === 3) {
+        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    }
+	
+    if (hex.length !== 6) {        
+		console.log('Invalid HEX color.');
+    }
+	
+    var r = parseInt(hex.slice(0, 2), 16),
+        g = parseInt(hex.slice(2, 4), 16),
+        b = parseInt(hex.slice(4, 6), 16);
+		
+    if (bw) {
+        return (r * 0.299 + g * 0.587 + b * 0.114) > 186
+            ? '#000000' : '#FFFFFF';
+    }
+	
+    r = (255 - r).toString(16);
+    g = (255 - g).toString(16);
+    b = (255 - b).toString(16);
+	
+    return "#" + padZero(r) + padZero(g) + padZero(b);
+}
+
+function BrandColors() {
+	var customColor = localStorage.getItem("BRAND_CLIENT_COLOR");
+	
+	if (!customColor) {
+		customColor = "#0f3b80";
+	}
+	
+	var contrastColor = invertColor(customColor, true);
+	
+	if (customColor != "#0f3b80") {		
+		var dialogFrameHeader = document.getElementById('dialogFrameHeader');
+		
+		if (dialogFrameHeader) {
+			dialogFrameHeader.style.backgroundColor = customColor;
+			dialogFrameHeader.style.color = contrastColor;
+		}
+				
+		var elementList = document.getElementsByClassName('button');
+		
+		if (elementList) {
+			for (i = 0; i < elementList.length; i++) {
+				occurance = elementList[i];
+				
+				if (occurance) {
+					occurance.style.backgroundColor = customColor;
+					occurance.style.borderColor = customColor;
+					occurance.style.color = contrastColor;
+				}
+			}
+		}
+	}
+	
+	var backgroundColor = localStorage.getItem("BRAND_BACKGROUND_COLOR");
+	
+	if (!backgroundColor) {
+		backgroundColor = "#FFFFFF";
+	}	
+		
+	if (backgroundColor != "#FFFFFF") {		
+		var mainbody = document.getElementById('mainbody');	
+		
+		if (mainbody) {			
+			mainbody.style.backgroundColor = backgroundColor;
+			mainbody.style.background = backgroundColor;
+		}	
+	
+		var outeriFrame = document.getElementById('iFrameLogon');	
+		
+		if (outeriFrame) {
+			var outerDoc = (outeriFrame.contentDocument) ? outeriFrame.contentDocument : outeriFrame.contentWindow.document;
+			
+			if (outerDoc) {
+				var outerBody = outerDoc.getElementById('outerBody');	
+				
+				if (outerBody) {
+					outerBody.style.backgroundColor = backgroundColor;
+					outerBody.style.background = backgroundColor;
+				}
+				
+				var inneriFrame = outerDoc.getElementById('iFrameWebApp');		
+
+				if (inneriFrame) {
+					var innerDoc = (inneriFrame.contentDocument) ? inneriFrame.contentDocument : inneriFrame.contentWindow.document;
+					
+					if (innerDoc) {
+						var innerBody = innerDoc.getElementById('innerBody');	
+								
+						if (innerBody) {
+							innerBody.style.backgroundColor = backgroundColor;
+							innerBody.style.background = backgroundColor;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+function BrandImages() {
+	var backgroundSet = 0;
+	
+	for (x = 0; x < BRAND_IMG_LIST.length; x++) {		
+		var containerList = document.getElementsByClassName(BRAND_IMG_LIST[x]);
+		
+		if (containerList) {
+			var storedImage = JSON.parse(localStorage.getItem(BRAND_IMG_LIST[x]));
+			
+			if (storedImage) {
+				for (i = 0; i < containerList.length; i++) {
+					var image = new Image();
+					image.src = storedImage.imagedata;
+					image.style.cssText = storedImage.imageStyle;
+					
+					occurance = containerList[i];
+
+					if (occurance) {
+						if (BRAND_IMG_LIST[x] == "BRAND_IMG_BACKGROUND") {
+							occurance.style.cssText = storedImage.containerStyle;
+							occurance.style.backgroundImage = "url('"+ storedImage.imagedata + "')";
+							backgroundSet = 1;
+						}
+						else {
+							occurance.style.cssText = storedImage.containerStyle;
+							occurance.style.display = "block";
+							
+							numChildren = occurance.childNodes.length;
+							
+							for (j = 0; j < numChildren; j++) {
+								occurance.removeChild(occurance.childNodes[0]);
+							}
+							
+							occurance.appendChild(image);
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+function BrandText() {
+	for (x = 0; x < BRAND_ELEMENT_LIST.length; x++) {		
+		var elementList = document.getElementsByClassName(BRAND_ELEMENT_LIST[x]);
+		
+		if (elementList) {
+			for (i = 0; i < elementList.length; i++) {
+				occurance = elementList[i];
+				
+				if (occurance) {
+					var storedElement = localStorage.getItem(BRAND_ELEMENT_LIST[x]);
+					
+					if (storedElement) {
+						if (DEFAULT_ELEMENT_STRINGS[x] == "*") {
+							occurance.innerHTML = storedElement;
+						}
+						else {
+							occurance.innerHTML = occurance.innerHTML.replace(DEFAULT_ELEMENT_STRINGS[x], storedElement);
+							occurance.innerHTML = occurance.innerHTML.replace(DEFAULT_ELEMENT_STRINGS[x], storedElement);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	var elementList = document.getElementsByClassName("BRAND");
+					
+	if (elementList) {
+		for (i = 0; i < elementList.length; i++) {
+			occurance = elementList[i];
+			
+			if (occurance) {
+				if (!occurance.classList.contains("INSTALL_STEP2") && !occurance.classList.contains("INSTALL_STEP3"))
+				{
+					occurance.style.visibility = "visible";
+				}
+			}
+		}
+	}
+}
+
+function GetProtocolString() {
+	var retVal = DEFAULT_ELEMENT_STRINGS[BRAND_ELEMENT_LIST.indexOf("BRAND_NAME_PROTOCOL")];
+	
+	var storedElement = localStorage.getItem("BRAND_NAME_PROTOCOL");
+	
+	if (storedElement) {
+		retVal = storedElement;
+	}
+	
+	return retVal;
+}

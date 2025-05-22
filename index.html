@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en-us">
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title class="BRAND BRAND_NAME_PRODUCT">GO-Global</title>
+		<link rel=stylesheet type="text/css" href="style.css%3Fv=34154.css">
+		<script src='brand.js%3Fv=34154'></script>
+		<script src='util.js%3Fv=34154'></script>
+		<script src='handler.js%3Fv=34154'></script>
+		<script>
+                        const queryString = window.location.search;
+                        const params = new URLSearchParams(queryString);
+			// To specify startup parameters, add controlArgs.set() for each parameter.
+			// 
+			// controlArgs.set([ "user",          "testuser1"     ]);
+			// controlArgs.set([ "password",      "testpassword1" ]);
+			// controlArgs.set([ "embed",         "false"         ]);
+			// controlArgs.set([ "width",         "640"           ]);
+			// controlArgs.set([ "height",        "480"           ]);
+			// controlArgs.set([ "app",           "testapp1"      ]);
+			controlArgs.set([ "port",          "443"         ]);
+			// controlArgs.set([ "printerconfig", "default"       ]);
+			controlArgs.set([ "host",          params.get('host')     ]);
+			// controlArgs.set([ "compression",   "true"          ]);
+			// controlArgs.set([ "clientframe",   "false"         ]);
+			// controlArgs.set([ "multimonitor",  "true"          ]);
+			// controlArgs.set([ "noscale",       "false"         ]);
+			// controlArgs.set([ "authority",     "not_specified" ]);
+			// controlArgs.set([ "credentials",   "not_specified" ]);
+			// controlArgs.set([ "sessionid",     "1234"          ]);
+			// controlArgs.set([ "autoreconnect", "0"             ]);
+			// controlArgs.set([ "maxbpp",        "16"            ]);
+			// controlArgs.set([ "keyboard",      "ClientSideIME" ]);
+			// controlArgs.set([ "args",          "testargs1"     ]);
+			// controlArgs.set([ "useApp",        "true"          ]);
+			// controlArgs.set([ "installApp",    "addLink"       ]);
+			// controlArgs.set([ "showTitle",     "false"         ]);
+			// controlArgs.set([ "appLauncher",   "true"          ]);
+			// 
+			// Please refer to the Administrator Guide for further information.
+		</script>
+	</head>
+	<body id="mainbody" class="BRAND_IMG_BACKGROUND">
+		<div id="mySidenav" class="sidenav" style="display:none">
+			<div id="mySidenavContainer" class="sidenavcontainer">
+				<div id="helpContainer" title="help/quickstart.html"></div>
+			</div>
+		</div>
+
+		<div id="main">
+		
+			<div class="barFrame" style="display:none">
+				<span id="notificationFrame"></span>
+				<div class="title"></div>
+			</div>
+			<div id="msgFrame"><span class="close" onclick="hideReconnectMessageBox()">&times;</span></div>
+			<div id="startingSession"></div>
+		
+			<div id="messageApp" class="modalBar">
+				<div id="messageAppContent" class="modalBar-content">
+
+				</div>
+			</div>
+	
+			<div id="installApp" class="modal">
+				<div id="installAppContent" class="modal-content" style="display: none;">				
+				
+					<div id="dialogFrameHeader" class="barFrame" style="visibility: visible;">
+						<div id="leftImage" class="BRAND_IMG_LOGO">
+							<img src="product_logo.png.html" width="32" alt="">&nbsp;
+						</div>
+						
+						<div class="title BRAND BRAND_NAME_PRODUCT" id="installDialogTitle">GO-Global AppController</div>						
+					</div>
+					
+					<div id="dialogFrame" class="dialog">
+						<div id="dialogContents">
+							<div class="UI UI_FIRSTLOAD UI_LOADING">
+								<h5 id="connectingMessage">Connecting...</h5>
+							</div>
+							
+							<div class="UI UI_LAUNCH OS OS_WINDOWS OS_WINDOWS_ALLUSERS OS_MAC OS_LINUX_REDHAT OS_LINUX_DEBIAN OS_LINUX_UNKNOWN">									
+								<h5 class="BRAND BRAND_NAME_INSTALLER BRAND_CLIENT_RUN leftJustify" id="runDownload">1. Run GO-Global.AppController from your Downloads folder.</h5>						
+							</div>
+							
+							<div class="UI UI_LAUNCH OS OS_WINDOWS OS_WINDOWS_ALLUSERS OS_MAC OS_LINUX_REDHAT OS_LINUX_DEBIAN OS_LINUX_UNKNOWN">									
+								<h5 class="BRAND BRAND_NAME_INSTALLER BRAND_CLIENT_RUN leftJustify" id="runInstall">2. Install AppController.</h5>						
+							</div>
+														
+							<div class="UI UI_DOWNLOAD UI_LAUNCH UI_RECONNECT UI_APPROVE">														
+								<h5 class="BRAND BRAND_CLIENT_APPROVAL leftJustify" id="promptMessage">3. If prompted, allow your browser to open AppController.</h5>
+							</div>
+								
+							<br/>				
+								
+							<div class="UI UI_DOWNLOAD UI_LAUNCH UI_RECONNECT UI_APPROVE">	
+								<h5 class="BRAND BRAND_CLIENT_HAPPENING bold" id="nothingHappening">Nothing happening?</h5>								
+							</div>
+								
+							<div class="UI UI_DOWNLOAD">							
+								<div class="OS OS_WINDOWS">								
+									<h5 class="BRAND BRAND_NAME_PRODUCT BRAND_NAME_INSTALLER"><a class="button" href="Clients/AppController.exe" download="GO-Global.AppController.exe" onclick='UpdateState("UI_LAUNCH")' id="DownloadWindows">Download AppController</a></h5>
+								</div>
+								
+								<div class="OS OS_WINDOWS_ALLUSERS">
+									<h5 class="BRAND BRAND_NAME_PRODUCT BRAND_NAME_INSTALLER"><a class="button" href="Clients/AppController.AllUsers.exe" download="GO-Global.AppController.AllUsers.exe" onclick='UpdateState("UI_LAUNCH")' id="DownloadWindowsAllUser">Download AppController</a> (All Users)</h5>
+								</div>
+
+								<div class="OS OS_MAC">
+									<h5 class="BRAND BRAND_NAME_PRODUCT BRAND_NAME_INSTALLER"><a class="button" href="Clients/AppController.dmg" download="GO-Global.AppController.dmg" onclick='UpdateState("UI_LAUNCH")' id="DownloadMac">Download AppController</a></h5>
+								</div>
+
+								<div class="OS OS_LINUX_REDHAT">
+									<h5 class="BRAND BRAND_NAME_PRODUCT BRAND_NAME_INSTALLER"><a class="button" href="Clients/AppController.rpm" download="GO-Global.AppController.rpm" onclick='UpdateState("UI_LAUNCH")' id="DownloadRedHat">Download AppController</a></h5>
+								</div>
+
+								<div class="OS OS_LINUX_DEBIAN">
+									<h5 class="BRAND BRAND_NAME_PRODUCT BRAND_NAME_INSTALLER"><a class="button" href="Clients/AppController.deb" download="GO-Global.AppController.deb" onclick='UpdateState("UI_LAUNCH")' id="DownloadDebian">Download AppController</a></h5>
+								</div>
+
+								<div class="OS OS_LINUX_UNKNOWN">
+									<h5 class="BRAND BRAND_NAME_INSTALLER"><a class="button" href="Clients/AppController.deb" download="GO-Global.AppController.deb" onclick='UpdateState("UI_LAUNCH")'>Download AppController.deb</a></h5>
+									<h5 class="BRAND BRAND_NAME_INSTALLER"><a class="button" href="Clients/AppController.rpm" download="GO-Global.AppController.rpm" onclick='UpdateState("UI_LAUNCH")'>Download AppController.rpm</a></h5>
+								</div>
+							</div>
+							
+							<div class="UI UI_DOWNLOAD UI_LAUNCH OS OS_ANDROID" id="installAndroid" style="display: none;">
+								<h5 class="BRAND BRAND_NAME_PRODUCT OS OS_ANDROID" ><a class="button" href="javascript:void(0)" onclick='OpenLink("https://play.google.com/store/apps/details?id=com.graphon.appcontroller");' id="InstallAndroid">Install AppController</a></h5>
+							</div>								
+							
+							<div class="UI UI_DOWNLOAD UI_LAUNCH OS OS_CHROME" id="installChrome" style="display: none;">
+								<h5 class="BRAND BRAND_NAME_PRODUCT OS OS_CHROME" style="display: none;"><a class="button" href="javascript:void(0)" onclick='OpenLink("https://play.google.com/store/apps/details?id=com.graphon.appcontroller");' id="InstallChrome">Install AppController</a></h5>
+							</div>								
+
+							<div class="UI UI_DOWNLOAD UI_LAUNCH OS OS_IOS" id="installiOS" style="display: none;">
+								<h5 class="BRAND BRAND_NAME_PRODUCT OS OS_IOS" style="display: none;"><a class="button" href="javascript:void(0)" onclick='OpenLink("http://itunes.apple.com/us/app/appcontroller/id1502304933?mt=8");' id="InstallIOS">Install AppController</a></h5>
+							</div>
+							
+							<div class="UI UI_DOWNLOAD UI_LAUNCH UI_RECONNECT UI_APPROVE OS OS_ANDROID" id="launchAndroid">
+								<h5 class="BRAND BRAND_NAME_PRODUCT OS OS_ANDROID" ><a class="button" href="javascript:void(0)" id="linkAndroid" title="" onclick='OpenApp("linkAndroid");'>Start AppController</a></h5>
+							</div>
+							
+							<div class="UI UI_DOWNLOAD UI_LAUNCH UI_RECONNECT UI_APPROVE OS OS_CHROME" id="launchChrome" style="display: none;">
+								<h5 class="BRAND BRAND_NAME_PRODUCT OS OS_CHROME"><a class="button" href="javascript:void(0)" id="linkChrome" title="" onclick='OpenApp("linkChrome");'>Start AppController</a></h5>
+							</div>
+							
+							<div class="UI UI_DOWNLOAD UI_LAUNCH UI_RECONNECT UI_APPROVE OS OS_IOS" id="launchiOS">
+								<h5 class="BRAND BRAND_NAME_PRODUCT OS OS_IOS"><a class="button" href="javascript:void(0)" id="linkIOS" title="" onclick='OpenApp("linkIOS");'>Start AppController</a></h5>
+							</div>
+								
+							<div class="UI UI_LAUNCH UI_RECONNECT UI_APPROVE OS OS_WINDOWS OS_WINDOWS_ALLUSERS OS_MAC OS_LINUX_REDHAT OS_LINUX_DEBIAN OS_LINUX_UNKNOWN">									
+								<h5 class="BRAND BRAND_NAME_PRODUCT BRAND_CLIENT_START"><a class="button" id="startButton" href="javascript:void(0)" onclick='window.localStorage.setItem("nextState", "UI_DOWNLOAD");	UpdateState("UI_LOADING")'>Start AppController</a></h5>
+							</div>								
+								
+							<div class="UI UI_DOWNLOAD UI_LAUNCH UI_RECONNECT UI_APPROVE">
+								<br/>
+								<h5 id="runInBrowser"><a class="BRAND BRAND_CLIENT_BROWSER" id="runInBrowserLink" href="javascript:void(0)" onclick='UpdateState("UI_CONFIRM")'>Run applications in your browser</a></h5>
+							</div>
+								
+							<div class="UI UI_DOWNLOAD UI_LAUNCH UI_RECONNECT UI_APPROVE">
+								<br/>
+								<h5><a class="BRAND BRAND_CLIENT_HELP" id="getHelp" href="javascript:void(0)" onclick='setPage("client.html", "main")'>Get help here.</a></h5>
+							</div>
+
+							<div class="UI UI_CONFIRM">
+								<h5 class="BRAND BRAND_CLIENT_LIMITS" id="securityRestrictions">Due to browser security restrictions, some features (e.g., access to local files and devices) are not available when running applications within your browser. Continue anyway?</h5>	
+								
+								<h5>
+									<a class="button" href="javascript:void(0)" onclick='UpdateState("UI_APPROVEHTML5");cancelDialog();' id="confirmYes">Yes</a>
+									<a class="button" href="javascript:void(0)" onclick='UpdateState("UI_CANCELHTML5");' id="confirmNo">No</a>
+								</h5>
+								
+								<h5 class="BRAND BRAND_CLIENT_QUESTIONS"><input type="checkbox" id="confirmationCheckbox" name="dontDisplay" value="false" onchange="inputCheckChanged();">Don't display this again.</h5>
+							</div>	
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div id="copyLinkClipboardModal" class="copy-modal">
+				<div class="link-modal-content">
+					<span class="close" onClick="closeCopyLinkClipboardDialog()">&times;</span>
+					<p>Click Copy to copy this link to the clipboard. You can then paste it into an email or instant message and share it with users.</p>
+					<textarea id="copy_link_text" rows="2" style="width:90%" onClick="this.select();"></textarea><br />
+					<button id="copyLink" data-copytarget="#copy_link_text" onClick="copyLinkToClipboard(this)">Copy</button>
+				</div>
+			</div>
+
+			<div id="copyClipboardModal" class="copy-modal">
+				<div class="copy-modal-content">
+					<span class="close" onClick="closeCopyClipboardDialog()">&times;</span>
+					<p>Click Copy to copy this text to the local clipboard.</p>
+					<textarea id="copy_text" rows="5" style="width:90%" onClick="this.select();"></textarea><br />
+					<button id="copy" data-copytarget="#copy_text" onClick="copyToClipboard(this)">Copy</button>
+				</div>
+			</div>
+
+			<iframe class="iframecontainer" id="iFrameLogon"></iframe>
+			
+		</div>
+
+		<script>
+			buildCommandLine(1);
+			TailorForOS();
+		</script>
+	</body>		
+</html>
